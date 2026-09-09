@@ -85,16 +85,12 @@ let currentAction;
 
 const animationFiles = {
 
-    idle: '.assets/models/animations/HipHopDancing.fbx',
-
-    walking: './assets/models/animations/BreakdanceFreezeVar2.fbx',
-
-    running: './assets/models/animations/JoyfulJump.fbx',
-
-    jumping: './assets/models/animations/NorthernSoulSpin.fbx',
-
-    dance: './assets/models/animations/SillyDancing.fbx'
-
+    HipHop: './assets/models/animations/HipHopDancing.fbx',
+    BreakDance: './assets/models/animations/BreakdanceFreezeVar2.fbx',
+    Jump: './assets/models/animations/JoyfulJump.fbx',
+    NortherSoul: './assets/models/animations/NorthernSoulSpin.fbx',
+    SillyDancing: './assets/models/animations/SillyDancing.fbx',
+    RumbaDancing: './assets/models/animations/RumbaDancing.fbx'
 };
 
 
@@ -190,15 +186,17 @@ window.addEventListener('keydown', (event) => {
 
     const keyboard = {
 
-        Digit1: 'idle',
+        Digit1: 'HipHop',
 
-        Digit2: 'walking',
+        Digit2: 'BreakDance',
 
-        Digit3: 'running',
+        Digit3: 'Jump',
 
-        Digit4: 'jumping',
+        Digit4: 'NortherSoul',
 
-        Digit5: 'dance'
+        Digit5: 'SillyDancing',
+
+        Digit6: 'RumbaDancing'
 
     };
 
