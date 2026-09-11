@@ -4,75 +4,189 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
+
+// ============================================================
+// ESCENA
+// ============================================================
+
 const scene = new THREE.Scene();
+
 scene.background = new THREE.Color(0x07111f);
 
+
+// ============================================================
+// CÁMARA
+// ============================================================
+
 const camera = new THREE.PerspectiveCamera(
+
     50,
+
     window.innerWidth / window.innerHeight,
+
     0.1,
-    100
+
+    500
+
 );
 
 camera.position.set(5, 3.5, 7);
 
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+// ============================================================
+// RENDERER
+// ============================================================
 
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+const renderer = new THREE.WebGLRenderer({
 
-renderer.setSize(window.innerWidth, window.innerHeight);
+    antialias: true
+
+});
+
+renderer.setPixelRatio(
+
+    Math.min(window.devicePixelRatio, 2)
+
+);
+
+renderer.setSize(
+
+    window.innerWidth,
+
+    window.innerHeight
+
+);
 
 renderer.shadowMap.enabled = true;
 
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type =
+    THREE.PCFSoftShadowMap;
 
-document.getElementById('scene-container').appendChild(renderer.domElement);
+document
+    .getElementById('scene-container')
+    .appendChild(renderer.domElement);
 
 
-const controls = new OrbitControls(camera, renderer.domElement);
+// ============================================================
+// CONTROLES DE CÁMARA
+// ============================================================
+
+const controls =
+    new OrbitControls(
+        camera,
+        renderer.domElement
+    );
 
 controls.enableDamping = true;
+
+controls.dampingFactor = 0.08;
 
 controls.target.set(0, 1, 0);
 
 
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x223344, 1.8);
+// ============================================================
+// ILUMINACIÓN
+// ============================================================
+
+const hemiLight =
+    new THREE.HemisphereLight(
+        0xffffff,
+        0x223344,
+        1.8
+    );
 
 scene.add(hemiLight);
 
 
-const mainLight = new THREE.DirectionalLight(0xffffff, 3);
+const mainLight =
+    new THREE.DirectionalLight(
+        0xffffff,
+        3
+    );
 
-mainLight.position.set(5, 10, 6);
+mainLight.position.set(
+    5,
+    10,
+    6
+);
 
 mainLight.castShadow = true;
 
-mainLight.shadow.mapSize.set(2048, 2048);
+mainLight.shadow.mapSize.set(
+    2048,
+    2048
+);
+
+// Área de sombras más grande
+mainLight.shadow.camera.left = -20;
+mainLight.shadow.camera.right = 20;
+mainLight.shadow.camera.top = 20;
+mainLight.shadow.camera.bottom = -20;
 
 scene.add(mainLight);
 
 
+// ============================================================
+// PISO
+// ============================================================
+
+const floorSize = 80;
+
 const floor = new THREE.Mesh(
 
-    new THREE.PlaneGeometry(20, 20),
+    new THREE.PlaneGeometry(
+        floorSize,
+        floorSize
+    ),
 
-    new THREE.MeshStandardMaterial({ color: 0x263445, roughness: 0.9 })
+    new THREE.MeshStandardMaterial({
+
+        color: 0x263445,
+
+        roughness: 0.9
+
+    })
 
 );
 
-floor.rotation.x = -Math.PI / 2;
+floor.rotation.x =
+    -Math.PI / 2;
 
 floor.receiveShadow = true;
 
 scene.add(floor);
 
-scene.add(new THREE.GridHelper(20, 20, 0x7dd3fc, 0x475569));
+
+// ============================================================
+// CUADRÍCULA
+// ============================================================
+
+const grid = new THREE.GridHelper(
+
+    floorSize,
+
+    80,
+
+    0x7dd3fc,
+
+    0x475569
+
+);
+
+grid.position.y = 0.002;
+
+scene.add(grid);
 
 
-const loader = new FBXLoader();
+// ============================================================
+// LOADER Y ANIMACIONES
+// ============================================================
 
-const clock = new THREE.Clock();
+const loader =
+    new FBXLoader();
+
+const clock =
+    new THREE.Clock();
 
 const actions = {};
 
@@ -83,151 +197,758 @@ let mixer;
 let currentAction;
 
 
+// ============================================================
+// ARCHIVOS DE ANIMACIÓN
+// ============================================================
+
 const animationFiles = {
 
-    HipHop: './assets/models/animations/HipHopDancing.fbx',
-    BreakDance: './assets/models/animations/BreakdanceFreezeVar2.fbx',
-    Jump: './assets/models/animations/JoyfulJump.fbx',
-    NortherSoul: './assets/models/animations/NorthernSoulSpin.fbx',
-    SillyDancing: './assets/models/animations/SillyDancing.fbx',
-    RumbaDancing: './assets/models/animations/RumbaDancing.fbx'
+    HipHop:
+        './assets/models/animations/HipHopDancing.fbx',
+
+    BreakDance:
+        './assets/models/animations/BreakdanceFreezeVar2.fbx',
+
+    Jump:
+        './assets/models/animations/JoyfulJump.fbx',
+
+    NortherSoul:
+        './assets/models/animations/NorthernSoulSpin.fbx',
+
+    SillyDancing:
+        './assets/models/animations/SillyDancing.fbx',
+
+    RumbaDancing:
+        './assets/models/animations/RumbaDancing.fbx',
+
+    Ballet:
+        './assets/models/animations/Dancing.fbx'
+
 };
 
 
+// ============================================================
+// CARGAR ANIMACIÓN
+// ============================================================
+
 function loadAnimation(name, url) {
 
-    return new Promise((resolve, reject) => {
+    return new Promise(
+        (resolve, reject) => {
 
-        loader.load(url, (fbx) => {
+            loader.load(
 
-            const clip = fbx.animations[0];
+                url,
 
-            actions[name] = mixer.clipAction(clip);
+                (fbx) => {
 
-            resolve();
+                    const clip =
+                        fbx.animations[0];
 
-        }, undefined, reject);
+                    actions[name] =
+                        mixer.clipAction(clip);
 
-    });
+                    resolve();
+
+                },
+
+                undefined,
+
+                reject
+
+            );
+
+        }
+    );
 
 }
 
+
+// ============================================================
+// CAMBIAR ANIMACIÓN SUAVEMENTE
+// ============================================================
 
 function playAction(name) {
 
-    const nextAction = actions[name];
-
-    if (!nextAction || nextAction === currentAction) return;
-
-
-    if (currentAction) currentAction.fadeOut(0.25);
+    const nextAction =
+        actions[name];
 
 
-    nextAction
-
-        .reset()
-
-        .setEffectiveTimeScale(1)
-
-        .setEffectiveWeight(1)
-
-        .fadeIn(0.25)
-
-        .play();
+    if (!nextAction)
+        return;
 
 
-    currentAction = nextAction;
+    if (nextAction === currentAction)
+        return;
 
-    document.getElementById('animation-name').textContent = name.toUpperCase();
+
+    // ========================================================
+    // YA EXISTE UNA ANIMACIÓN
+    // ========================================================
+
+    if (currentAction) {
+
+        const currentClip =
+            currentAction.getClip();
+
+        const nextClip =
+            nextAction.getClip();
+
+
+        let progress = 0;
+
+
+        if (currentClip.duration > 0) {
+
+            progress =
+
+                (
+                    currentAction.time %
+                    currentClip.duration
+                )
+
+                /
+
+                currentClip.duration;
+
+        }
+
+
+        nextAction.enabled = true;
+
+        nextAction
+            .setEffectiveTimeScale(1);
+
+        nextAction
+            .setEffectiveWeight(1);
+
+
+        // Mantener aproximadamente
+        // el progreso de la animación anterior
+        nextAction.time =
+
+            progress *
+            nextClip.duration;
+
+
+        nextAction.play();
+
+
+        currentAction.crossFadeTo(
+
+            nextAction,
+
+            0.6,
+
+            true
+
+        );
+
+    }
+
+    // ========================================================
+    // PRIMERA ANIMACIÓN
+    // ========================================================
+
+    else {
+
+        nextAction
+
+            .reset()
+
+            .setEffectiveTimeScale(1)
+
+            .setEffectiveWeight(1)
+
+            .fadeIn(0.3)
+
+            .play();
+
+    }
+
+
+    currentAction =
+        nextAction;
+
+
+    const animationLabel =
+        document.getElementById(
+            'animation-name'
+        );
+
+
+    if (animationLabel) {
+
+        animationLabel.textContent =
+            name.toUpperCase();
+
+    }
 
 }
 
 
-loader.load('./assets/models/character.fbx', async (fbx) => {
+// ============================================================
+// CARGAR MODELO
+// ============================================================
 
-    model = fbx;
+loader.load(
 
-    model.scale.setScalar(0.01);
+    './assets/models/character.fbx',
 
-    model.position.set(0, 0, 0);
+    async (fbx) => {
+
+        model = fbx;
 
 
-    model.traverse((child) => {
+        model.scale.setScalar(
+            0.01
+        );
 
-        if (child.isMesh) {
 
-            child.castShadow = true;
+        model.position.set(
+            0,
+            0,
+            0
+        );
 
-            child.receiveShadow = true;
+
+        model.traverse(
+            (child) => {
+
+                if (child.isMesh) {
+
+                    child.castShadow =
+                        true;
+
+                    child.receiveShadow =
+                        true;
+
+                }
+
+            }
+        );
+
+
+        scene.add(model);
+
+
+        mixer =
+            new THREE.AnimationMixer(
+                model
+            );
+
+
+        await Promise.all(
+
+            Object
+                .entries(animationFiles)
+                .map(
+                    ([name, url]) =>
+                        loadAnimation(
+                            name,
+                            url
+                        )
+                )
+
+        );
+
+
+        // Animación inicial
+        playAction('HipHop');
+
+    },
+
+    undefined,
+
+    (error) => {
+
+        console.error(
+            'Error al cargar el modelo:',
+            error
+        );
+
+    }
+
+);
+
+
+// ============================================================
+// TECLAS ACTIVAS
+// ============================================================
+
+const keys = {
+
+    forward: false,
+
+    backward: false,
+
+    left: false,
+
+    right: false,
+
+    sprint: false
+
+};
+
+
+// ============================================================
+// KEYDOWN
+// ============================================================
+
+window.addEventListener(
+    'keydown',
+    (event) => {
+
+
+        // ----------------------------------------------------
+        // MOVIMIENTO
+        // ----------------------------------------------------
+
+        switch (event.code) {
+
+            case 'KeyW':
+            case 'ArrowUp':
+
+                keys.forward = true;
+
+                break;
+
+
+            case 'KeyS':
+            case 'ArrowDown':
+
+                keys.backward = true;
+
+                break;
+
+
+            case 'KeyA':
+            case 'ArrowLeft':
+
+                keys.left = true;
+
+                break;
+
+
+            case 'KeyD':
+            case 'ArrowRight':
+
+                keys.right = true;
+
+                break;
+
+
+            case 'ShiftLeft':
+            case 'ShiftRight':
+
+                keys.sprint = true;
+
+                break;
 
         }
 
-    });
+
+        // ----------------------------------------------------
+        // ANIMACIONES
+        // ----------------------------------------------------
+
+        const keyboard = {
+
+            Digit1: 'HipHop',
+
+            Digit2: 'BreakDance',
+
+            Digit3: 'Jump',
+
+            Digit4: 'NortherSoul',
+
+            Digit5: 'SillyDancing',
+
+            Digit6: 'RumbaDancing',
+
+            Digit7: 'Ballet'
+
+        };
 
 
-    scene.add(model);
+        if (keyboard[event.code]) {
 
-    mixer = new THREE.AnimationMixer(model);
+            playAction(
+                keyboard[event.code]
+            );
+
+        }
+
+    }
+);
 
 
-    await Promise.all(
+// ============================================================
+// KEYUP
+// ============================================================
 
-        Object.entries(animationFiles).map(([name, url]) => loadAnimation(name, url))
+window.addEventListener(
+    'keyup',
+    (event) => {
+
+        switch (event.code) {
+
+            case 'KeyW':
+            case 'ArrowUp':
+
+                keys.forward = false;
+
+                break;
+
+
+            case 'KeyS':
+            case 'ArrowDown':
+
+                keys.backward = false;
+
+                break;
+
+
+            case 'KeyA':
+            case 'ArrowLeft':
+
+                keys.left = false;
+
+                break;
+
+
+            case 'KeyD':
+            case 'ArrowRight':
+
+                keys.right = false;
+
+                break;
+
+
+            case 'ShiftLeft':
+            case 'ShiftRight':
+
+                keys.sprint = false;
+
+                break;
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// PARÁMETROS DE MOVIMIENTO
+// ============================================================
+
+const WALK_SPEED = 2.2;
+
+const RUN_SPEED = 4.5;
+
+const ROTATION_SPEED = 2.3;
+
+
+// Vector temporal
+const movementDirection =
+    new THREE.Vector3();
+
+
+// ============================================================
+// MOVIMIENTO DEL PERSONAJE
+// ============================================================
+
+function updateCharacterMovement(delta) {
+
+    if (!model)
+        return;
+
+
+    // --------------------------------------------------------
+    // GIRAR
+    // --------------------------------------------------------
+
+    if (keys.left) {
+
+        model.rotation.y +=
+
+            ROTATION_SPEED *
+            delta;
+
+    }
+
+
+    if (keys.right) {
+
+        model.rotation.y -=
+
+            ROTATION_SPEED *
+            delta;
+
+    }
+
+
+    // --------------------------------------------------------
+    // VELOCIDAD
+    // --------------------------------------------------------
+
+    const speed =
+
+        keys.sprint
+
+            ? RUN_SPEED
+
+            : WALK_SPEED;
+
+
+    let direction = 0;
+
+
+    if (keys.forward)
+        direction += 1;
+
+
+    if (keys.backward)
+        direction -= 1;
+
+
+    // --------------------------------------------------------
+    // AVANZAR / RETROCEDER
+    // --------------------------------------------------------
+
+    if (direction !== 0) {
+
+        movementDirection.set(
+
+            Math.sin(
+                model.rotation.y
+            ),
+
+            0,
+
+            Math.cos(
+                model.rotation.y
+            )
+
+        );
+
+
+        movementDirection.multiplyScalar(
+
+            speed *
+            delta *
+            direction
+
+        );
+
+
+        model.position.add(
+            movementDirection
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// CÁMARA SIGUIENDO AL PERSONAJE
+// ============================================================
+
+const previousModelPosition =
+    new THREE.Vector3();
+
+
+function updateCameraFollow() {
+
+    if (!model)
+        return;
+
+
+    // Cuánto se desplazó el personaje
+    const movement =
+
+        model.position
+            .clone()
+            .sub(
+                previousModelPosition
+            );
+
+
+    // Mover cámara junto al personaje
+    camera.position.add(
+        movement
+    );
+
+
+    // El OrbitControls mira al personaje
+    controls.target.set(
+
+        model.position.x,
+
+        model.position.y + 1,
+
+        model.position.z
 
     );
 
 
-    playAction('idle');
-
-}, undefined, (error) => console.error('Error al cargar el modelo:', error));
-
-
-window.addEventListener('keydown', (event) => {
-
-    const keyboard = {
-
-        Digit1: 'HipHop',
-
-        Digit2: 'BreakDance',
-
-        Digit3: 'Jump',
-
-        Digit4: 'NortherSoul',
-
-        Digit5: 'SillyDancing',
-
-        Digit6: 'RumbaDancing'
-
-    };
-
-
-    if (keyboard[event.code]) playAction(keyboard[event.code]);
-
-});
-
-
-function animate() {
-
-    const delta = clock.getDelta();
-
-    if (mixer) mixer.update(delta);
-
-    controls.update();
-
-    renderer.render(scene, camera);
+    previousModelPosition.copy(
+        model.position
+    );
 
 }
 
 
-renderer.setAnimationLoop(animate);
+// ============================================================
+// PISO "INFINITO"
+// ============================================================
+
+function updateInfiniteFloor() {
+
+    if (!model)
+        return;
 
 
-window.addEventListener('resize', () => {
+    /*
+        El piso y la cuadrícula se colocan
+        constantemente debajo del personaje.
 
-    camera.aspect = window.innerWidth / window.innerHeight;
+        De esta manera el usuario nunca
+        llega visualmente al borde.
+    */
 
-    camera.updateProjectionMatrix();
 
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    floor.position.x =
+        model.position.x;
 
-}); s
+    floor.position.z =
+        model.position.z;
+
+
+    grid.position.x =
+        model.position.x;
+
+    grid.position.z =
+        model.position.z;
+
+
+    // --------------------------------------------------------
+    // La luz también sigue al personaje
+    // --------------------------------------------------------
+
+    mainLight.position.set(
+
+        model.position.x + 5,
+
+        10,
+
+        model.position.z + 6
+
+    );
+
+
+    mainLight.target.position.set(
+
+        model.position.x,
+
+        0,
+
+        model.position.z
+
+    );
+
+
+    scene.add(
+        mainLight.target
+    );
+
+}
+
+
+// ============================================================
+// ANIMACIÓN PRINCIPAL
+// ============================================================
+
+function animate() {
+
+    const delta =
+        Math.min(
+            clock.getDelta(),
+            0.1
+        );
+
+
+    // Animaciones FBX
+    if (mixer) {
+
+        mixer.update(
+            delta
+        );
+
+    }
+
+
+    // Movimiento con teclado
+    updateCharacterMovement(
+        delta
+    );
+
+
+    // Piso infinito
+    updateInfiniteFloor();
+
+
+    // Cámara siguiendo personaje
+    updateCameraFollow();
+
+
+    // OrbitControls
+    controls.update();
+
+
+    // Renderizar
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+
+// ============================================================
+// LOOP
+// ============================================================
+
+renderer.setAnimationLoop(
+    animate
+);
+
+
+// ============================================================
+// RESIZE
+// ============================================================
+
+window.addEventListener(
+    'resize',
+    () => {
+
+        camera.aspect =
+
+            window.innerWidth /
+            window.innerHeight;
+
+
+        camera.updateProjectionMatrix();
+
+
+        renderer.setSize(
+
+            window.innerWidth,
+
+            window.innerHeight
+
+        );
+
+    }
+);
